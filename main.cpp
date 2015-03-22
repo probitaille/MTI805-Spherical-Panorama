@@ -146,7 +146,7 @@ std::string save_graph_to;
 string warp_type = "spherical";
 int expos_comp_type = ExposureCompensator::GAIN_BLOCKS;
 float match_conf = 0.3f;
-string seam_find_type = "gc_color";
+string seam_find_type = "voronoi";
 int blend_type = Blender::MULTI_BAND;
 int timelapse_type = Timelapser::AS_IS;
 float blend_strength = 5;
@@ -523,6 +523,9 @@ int main(int argc, char* argv[])
     }
     */
 
+    clock_t startTimeHomography = clock();
+    cout << "Homography estimation...\n";
+
     HomographyBasedEstimator estimator;
     vector<CameraParams> cameras;
     if (!estimator(features, pairwise_matches, cameras))
@@ -560,6 +563,10 @@ int main(int argc, char* argv[])
         cout << "Camera parameters adjusting failed.\n";
         return -1;
     }
+
+    cout << "Homography estimation, time: " << double( clock() - startTimeHomography ) / (double)CLOCKS_PER_SEC<< " seconds." << endl;
+
+
 
     // Find median focal length
 
@@ -602,6 +609,7 @@ clock_t startTimeWarping = clock();
     vector<UMat> masks(num_images);
 
     cout << "Prepare images masks...\n";
+
     // Preapre images masks
     for (int i = 0; i < num_images; ++i)
     {
@@ -693,6 +701,7 @@ clock_t startTimeWarping = clock();
     //LOGLN("Warping images, time: " << ((getTickCount() - t) / getTickFrequency()) << " sec");
 
     cout << "Exposure compensator...\n";
+
 
     clock_t startTimeExposure = clock();
     //Cette fonction elle celle qui prend le plus de temps:
